@@ -1,0 +1,32 @@
+﻿<Application x:Class="UsermapConverter.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="UI/Windows/Home.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Ui/Metro/Themes/Blue.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Themes/Dark.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/ActionButtons/CloseButton.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroCheckBox.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroControls.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroContextMenu.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroScrollBar.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroScrollViewer.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroMenuStrip.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroTabControlTop.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroTabControlBottom.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroActiveButtons.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroTreeView.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroComboBox.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroListView.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroDataGrid.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroSlider.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroProgressbar.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/MetroFonts.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/OtherMetroTabs.xaml"/>
+                <ResourceDictionary Source="Ui/Metro/Controls/TabClosing/CloseStyleing.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
