@@ -50,6 +50,8 @@ namespace UsermapConverter.Windows
             UpdateTitleText("Usermap Converter");
             UpdateStatusText("Ready...");
 
+            UsermapConversion.myHome = this; // Injects itself into that static property so the Conversion thing can update the status for debugging. Shoddy as fuck, I guess, but it works.
+
             Window_StateChanged(null, null);
 
             listboxFileQueue.ItemsSource = FileQueue;
@@ -84,6 +86,17 @@ namespace UsermapConverter.Windows
         public void UpdateStatusText(string status)
         {
             this.Status.Text = status;
+        }
+
+
+
+        /// <summary>
+        /// Extend the debug text of Metro WPF Template
+        /// </summary>
+        /// <param name="status">Debug text of Metro WPF Template</param>
+        public void UpdateTestwhateverText(string status)
+        {
+            this.Testwhatever.Text += "\r\n"+status;
         }
 
         #endregion

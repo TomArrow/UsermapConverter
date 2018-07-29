@@ -4,15 +4,30 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using System.Threading.Tasks;
 using static UsermapConverter.Usermap;
+using UsermapConverter.Windows;
 
 namespace UsermapConverter
 {
     class UsermapConversion
     {
+
+        public static Home myHome = null;
+        
+        public static void addStatus(string text)
+        {
+            myHome.Dispatcher.Invoke(() =>
+            {
+                myHome.UpdateTestwhateverText(text);
+            });
+        }
+
         public static void ConvertUsermap(string srcFileName, string destFileName)
         {
+            var tagMap = LoadTagMap();
+
             using (var srcStream = new EndianStream(File.Open(srcFileName, FileMode.Open, FileAccess.ReadWrite), EndianStream.EndianType.LittleEndian))
             using (var outStream = new EndianStream(File.Open(destFileName, FileMode.Create, FileAccess.ReadWrite), EndianStream.EndianType.LittleEndian))
             {
@@ -31,7 +46,7 @@ namespace UsermapConverter
                     for (int i = 0; i < 640; i++)
                         newPlacements.Add(canvasMap.Placements[i].Clone());
 
-                    for (int i = 0; i < srcMap.ScnrObjectCount; i++)
+                    for (int i = 0; i < srcMap.ScnrObjectCount; i++) // This first loop, I believe, is for so-called "scenario objects"
                     {
                         var srcPlacement = srcMap.Placements[i];
 
@@ -39,6 +54,27 @@ namespace UsermapConverter
                             continue;
 
                         var tagIndex = srcMap.Budget[srcPlacement.BudgetIndex].TagIndex;
+                        var tagIndexDiscarded = false;
+
+                        uint? newTagIndex;
+                        if(tagMap.TryGetValue(tagIndex, out newTagIndex)) // If the map contains this tagIndex, it means there was a change. If not, nevermind this, just move along.
+                        {
+
+                            if (newTagIndex.HasValue) // If new tag index isn't empty, it has to be mapped to a new value
+                            {
+                                UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
+                                tagIndex = (uint)newTagIndex;
+                            }
+                            else // Else it simply doesn't exist anymore and has to be discarded
+                            {
+                                UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
+                                tagIndexDiscarded = true;
+                            }
+                        }
+
+                        if (tagIndexDiscarded)
+                            continue;
+                        
 
                         var newBudgetIndex = canvasMap.Budget.FindIndex(e => e.TagIndex == tagIndex);
 
@@ -56,7 +92,7 @@ namespace UsermapConverter
                     }
 
                     var newPlacementIndex = canvasMap.ScnrObjectCount;
-                    for (var i = srcMap.ScnrObjectCount; i < 640; i++, newPlacementIndex++)
+                    for (var i = srcMap.ScnrObjectCount; i < 640; i++, newPlacementIndex++) // This one is for the normal placements I believe
                     {
                         var srcPlacement = srcMap.Placements[i];
 
@@ -64,6 +100,27 @@ namespace UsermapConverter
                             continue;
 
                         var tagIndex = srcMap.Budget[srcPlacement.BudgetIndex].TagIndex;
+                        var tagIndexDiscarded = false;
+
+                        uint? newTagIndex;
+                        if (tagMap.TryGetValue(tagIndex, out newTagIndex)) // If the map contains this tagIndex, it means there was a change. If not, nevermind this, just move along.
+                        {
+
+                            if (newTagIndex.HasValue) // If new tag index isn't empty, it has to be mapped to a new value
+                            {
+                                UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
+                                tagIndex = (uint)newTagIndex;
+                            }
+                            else // Else it simply doesn't exist anymore and has to be discarded
+                            {
+                                UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
+                                tagIndexDiscarded = true;
+                            }
+                        }
+
+
+                        if (tagIndexDiscarded)
+                            continue;
 
                         var newBudgetIndex = canvasMap.Budget.FindIndex(e => e.TagIndex == tagIndex);
                         if (newBudgetIndex == -1)
@@ -120,6 +177,39 @@ namespace UsermapConverter
                         Usermap.SerializeBudgetEntry(outStream, entry);
                 }
             }
+        }
+
+        public static Dictionary<uint, uint?> LoadTagMap()
+        {
+            var tagMap = Properties.Resources.map;
+            var result = new Dictionary<uint, uint?>();
+            using (var reader = new StringReader(tagMap))
+            {
+                while (true)
+                {
+                    var line = reader.ReadLine();
+                    if (line == null)
+                        break;
+                    line = line.Trim();
+                    var parts = line.Split(',');
+                    if (parts.Length < 2)
+                        continue;
+                    uint oldIndex;
+                    uint newIndexTmp;
+                    uint? newIndex;
+                    if (!uint.TryParse(parts[0].Trim(), NumberStyles.HexNumber, null, out oldIndex))
+                        continue;
+                    if (!uint.TryParse(parts[1].Trim(), NumberStyles.HexNumber, null, out newIndexTmp))
+                    {
+                        newIndex = null;
+                    } else
+                    {
+                        newIndex = newIndexTmp;
+                    }
+                    result[oldIndex] = newIndex;
+                }
+            }
+            return result;
         }
 
         public static string GetCanvasFileName(int mapId)
