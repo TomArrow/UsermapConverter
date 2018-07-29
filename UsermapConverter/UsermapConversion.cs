@@ -28,6 +28,9 @@ namespace UsermapConverter
         {
             var tagMap = LoadTagMap();
 
+
+            UsermapConversion.addStatus("Opening " + srcFileName);
+
             using (var srcStream = new EndianStream(File.Open(srcFileName, FileMode.Open, FileAccess.ReadWrite), EndianStream.EndianType.LittleEndian))
             using (var outStream = new EndianStream(File.Open(destFileName, FileMode.Create, FileAccess.ReadWrite), EndianStream.EndianType.LittleEndian))
             {
@@ -45,6 +48,9 @@ namespace UsermapConverter
 
                     for (int i = 0; i < 640; i++)
                         newPlacements.Add(canvasMap.Placements[i].Clone());
+
+
+                    UsermapConversion.addStatus("Source map has " + srcMap.ScnrObjectCount + " scenario objects");
 
                     for (int i = 0; i < srcMap.ScnrObjectCount; i++) // This first loop, I believe, is for so-called "scenario objects"
                     {
@@ -92,12 +98,17 @@ namespace UsermapConverter
                     }
 
                     var newPlacementIndex = canvasMap.ScnrObjectCount;
+                    short? emptyPlacementIndex = null; // If a placement index is unused, I can use it for the map options
+
                     for (var i = srcMap.ScnrObjectCount; i < 640; i++, newPlacementIndex++) // This one is for the normal placements I believe
                     {
                         var srcPlacement = srcMap.Placements[i];
 
                         if (srcPlacement.BudgetIndex == -1)
+                        {
+                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options"); }
                             continue;
+                        }
 
                         var tagIndex = srcMap.Budget[srcPlacement.BudgetIndex].TagIndex;
                         var tagIndexDiscarded = false;
@@ -120,7 +131,10 @@ namespace UsermapConverter
 
 
                         if (tagIndexDiscarded)
+                        {
+                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options"); }
                             continue;
+                        }
 
                         var newBudgetIndex = canvasMap.Budget.FindIndex(e => e.TagIndex == tagIndex);
                         if (newBudgetIndex == -1)
@@ -142,6 +156,8 @@ namespace UsermapConverter
                                 newBudgetIndex = canvasMap.BudgetEntryCount + newBudgetEntries.Count();
                                 newBudgetEntries.Add(entry);
 
+
+                                UsermapConversion.addStatus("injecting 0x" + tagIndex.ToString("X") + " "+ newBudgetIndex);
                                 Console.WriteLine("injecting 0x{0} {1}", tagIndex.ToString("X"), newBudgetIndex);
                             }
                             else
@@ -153,6 +169,30 @@ namespace UsermapConverter
 
                         var newPlacement = newPlacements[newPlacementIndex] = srcPlacement.Clone();
                         newPlacement.BudgetIndex = newBudgetIndex;
+                    }
+
+
+                    // Copy over map options (hex tag index 5728) from the canvas map (necessary because of the map barriers, may be leading to crashes in out of bound maps)
+                    var mapOptionsTagIndex = uint.Parse("5728", NumberStyles.HexNumber);
+                    for (var i = 0; i < 640; i++) // This one is for the normal placements I believe
+                    {
+                        var canvasPlacement = canvasMap.Placements[i];
+                        if (canvasPlacement.BudgetIndex != -1)
+                        {
+
+                            var tagIndex = canvasMap.Budget[canvasPlacement.BudgetIndex].TagIndex;
+                            if(tagIndex == mapOptionsTagIndex)
+                            {
+                                if (emptyPlacementIndex.HasValue)
+                                {
+                                    UsermapConversion.addStatus("Placing map options (0x5728) with disabled barriers in placement index "+emptyPlacementIndex);
+                                    newPlacements[(int)emptyPlacementIndex] = canvasPlacement.Clone();
+                                } else
+                                {
+                                    // There is no space to place map options. Sucks. Will either have to overwrite one element or ditch them.
+                                }
+                            }
+                        }
                     }
 
                     canvasStream.SeekTo(0);
