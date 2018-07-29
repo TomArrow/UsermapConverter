@@ -52,7 +52,8 @@ namespace UsermapConverter
 
                     UsermapConversion.addStatus("Source map has " + srcMap.ScnrObjectCount + " scenario objects");
 
-                    for (int i = 0; i < srcMap.ScnrObjectCount; i++) // This first loop, I believe, is for so-called "scenario objects"
+                    // This first loop, I believe, is for so-called "scenario objects"
+                    for (int i = 0; i < srcMap.ScnrObjectCount; i++) 
                     {
                         var srcPlacement = srcMap.Placements[i];
 
@@ -83,6 +84,7 @@ namespace UsermapConverter
                         
 
                         var newBudgetIndex = canvasMap.Budget.FindIndex(e => e.TagIndex == tagIndex);
+                        UsermapConversion.addStatus("SCENARIO OBJECT: Using new budget index "+newBudgetIndex + " (tagindex "+tagIndex.ToString("X")+")");
 
                         var substitutePlacements = canvasMap.Placements
                             .Where((x, j) =>
@@ -100,7 +102,8 @@ namespace UsermapConverter
                     var newPlacementIndex = canvasMap.ScnrObjectCount;
                     short? emptyPlacementIndex = null; // If a placement index is unused, I can use it for the map options
 
-                    for (var i = srcMap.ScnrObjectCount; i < 640; i++, newPlacementIndex++) // This one is for the normal placements I believe
+                    // This one is for the normal placements I believe
+                    for (var i = srcMap.ScnrObjectCount; i < 640; i++, newPlacementIndex++) 
                     {
                         var srcPlacement = srcMap.Placements[i];
 
@@ -146,11 +149,11 @@ namespace UsermapConverter
                                 var entry = new BudgetEntry()
                                 {
                                     TagIndex = tagIndex,
-                                    Cost = -1,
+                                    Cost = 1,
                                     RuntimeMin = 0,
-                                    RuntimeMax = 0,
-                                    CountOnMap = 0,
-                                    DesignTimeMax = 0
+                                    RuntimeMax = 255,
+                                    CountOnMap = 1,
+                                    DesignTimeMax = 255
                                 };
 
                                 newBudgetIndex = canvasMap.BudgetEntryCount + newBudgetEntries.Count();
@@ -163,7 +166,13 @@ namespace UsermapConverter
                             else
                             {
                                 newBudgetIndex = canvasMap.BudgetEntryCount + n;
+                                UsermapConversion.addStatus("Changing count of newly injected tag by +1 to "+ (++newBudgetEntries[n].CountOnMap).ToString() +". Tagindex: "+newBudgetEntries[n].TagIndex.ToString("X")+" New Budget Index(on top of original budget): " + newBudgetIndex);
+                               
                             }
+                        } else
+                        {
+
+                            UsermapConversion.addStatus("NON-SCENARIO OBJECT: Using new (already existing) budget index " + newBudgetIndex);
                         }
 
 
@@ -174,7 +183,7 @@ namespace UsermapConverter
 
                     // Copy over map options (hex tag index 5728) from the canvas map (necessary because of the map barriers, may be leading to crashes in out of bound maps)
                     var mapOptionsTagIndex = uint.Parse("5728", NumberStyles.HexNumber);
-                    for (var i = 0; i < 640; i++) // This one is for the normal placements I believe
+                    for (var i = 0; i < 640; i++)
                     {
                         var canvasPlacement = canvasMap.Placements[i];
                         if (canvasPlacement.BudgetIndex != -1)
