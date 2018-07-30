@@ -24,6 +24,56 @@ namespace UsermapConverter
             });
         }
 
+
+        public static void AnalyzeUsermap(string srcFileName, Dictionary<uint, uint> theDictionary)
+        {
+            var tagMap = LoadTagMap();
+
+
+            UsermapConversion.addStatus("Opening " + srcFileName);
+
+            using (var srcStream = new EndianStream(File.Open(srcFileName, FileMode.Open, FileAccess.ReadWrite), EndianStream.EndianType.LittleEndian))
+            {
+                SandboxMap srcMap = Usermap.DeserializeSandboxMap(srcStream);
+
+                if (!File.Exists(GetCanvasFileName(srcMap.MapId)))
+                    return;
+
+                using (var canvasStream = new EndianStream(File.OpenRead(GetCanvasFileName(srcMap.MapId)), EndianStream.EndianType.LittleEndian))
+                {
+                    
+
+                    // This first loop, I believe, is for so-called "scenario objects"
+                    for (int i = 0; i < 640; i++)
+                    {
+                        var srcPlacement = srcMap.Placements[i];
+
+                        if (srcPlacement.BudgetIndex == -1)
+                            continue;
+                        
+                        if(srcMap.Budget.ElementAtOrDefault(srcPlacement.BudgetIndex) != null)
+                        {
+                            var tagIndex = srcMap.Budget[srcPlacement.BudgetIndex].TagIndex;
+
+                            if (theDictionary.TryGetValue(tagIndex, out uint dictionaryItem))
+                            {
+                                theDictionary[tagIndex]++;
+                            }
+                            else
+                            {
+                                theDictionary[tagIndex] = 1;
+                            }
+
+                        }
+
+
+                    }
+                    
+                }
+            }
+        }
+
+
         public static void ConvertUsermap(string srcFileName, string destFileName)
         {
             var tagMap = LoadTagMap();

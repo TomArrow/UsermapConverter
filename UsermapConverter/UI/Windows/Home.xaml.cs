@@ -364,6 +364,46 @@ namespace UsermapConverter.Windows
             });
         }
 
+        private Task DoCreateDictionary(string destFolder)
+        {
+            var queue = FileQueue.ToList();
+            return Task.Run(() =>
+            {
+
+                var theDictionary = new Dictionary<uint, uint>();
+                var outputFile = Path.Combine(destFolder, "dictionary.csv");
+                for (var i = 1; File.Exists(outputFile); i++)
+                {
+                    outputFile = Path.Combine(destFolder, string.Format("dictionary_{0}.csv", i));
+                }
+
+                foreach (var item in queue)
+                {
+
+                    var dir = Path.GetDirectoryName(outputFile);
+                    if (!Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    UsermapConversion.AnalyzeUsermap(item.FileName, theDictionary);
+                    
+                }
+
+                // Sort by value
+                var theList = theDictionary.ToList();
+                theList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
+                theList.Reverse();
+                theDictionary = theList.ToDictionary(x=>x.Key,x=>x.Value);
+
+                string csvDictionary = "";
+                foreach (KeyValuePair<uint, uint> entry in theDictionary)
+                {
+                    // do something with entry.Value or entry.Key
+                    csvDictionary += entry.Key.ToString("X") + "," + entry.Value + "\r\n";
+                }
+                File.WriteAllText(outputFile, csvDictionary);
+            });
+        }
+
         private async void btnConvert_Click(object sender, RoutedEventArgs e)
         {
             UpdateStatusText("Converting...");
@@ -373,6 +413,23 @@ namespace UsermapConverter.Windows
             {
                 await DoConversion(txtOutputFolder.Text);
                 Metro.Dialogs.MetroMessageBox.Show(this.Title, "Maps Converted.");
+            }
+            finally
+            {
+                btnConvert.IsEnabled = true;
+                UpdateStatusText("Ready...");
+            }
+        }
+
+        private async void btnDictionary_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateStatusText("Creating Dictionary...");
+            btnConvert.IsEnabled = false;
+
+            try
+            {
+                await DoCreateDictionary(txtOutputFolder.Text);
+                Metro.Dialogs.MetroMessageBox.Show(this.Title, "Dictionary created.");
             }
             finally
             {
