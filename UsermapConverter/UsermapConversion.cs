@@ -97,6 +97,8 @@ namespace UsermapConverter
                 {
                     var canvasMap = Usermap.DeserializeSandboxMap(canvasStream);
 
+                    UsermapConversion.addStatus("Map has a "+srcMap.TotalObjectCount+" total objects and " + srcMap.BudgetEntryCount + " budget entries and "+srcMap.ScnrObjectCount+" scenario objects");
+
                     var newBudgetEntries = new List<BudgetEntry>();
                     var newPlacements = new List<SandboxPlacement>();
 
@@ -111,17 +113,19 @@ namespace UsermapConverter
                         newBudgetEntries.Add(srcMap.Budget[i].Clone());
 
                     // Find empty placement from canvasMap to use for replacing the invis spawn placements
+                    var placementFlagsForRemovedInvisSpawns = ushort.Parse("29", NumberStyles.HexNumber);
                     SandboxPlacement emptyPlacement = null;
                     for (int i = 0; i < 640; i++)
                     {
                         var canvasPlacement = canvasMap.Placements[i];
-                        
-                        //UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " " + canvasPlacement.Position + " " + canvasPlacement.RightVector + " " + canvasPlacement.UpVector + " " + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + + i);
-                        //UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " "  + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + +i);
 
-                        if (canvasPlacement.BudgetIndex == -1 && canvasPlacement.PlacementFlags == 0) // this is to find empty placements. The first objects in each file have a placementflags set to 29 (hex), despite budgetindex being -1. I am not yet sure which one is needed moar here, I'll go with the default empty one for now
+                        //UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " " + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + +i);
+                        //UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " " + canvasPlacement.Position + " " + canvasPlacement.RightVector + " " + canvasPlacement.UpVector + " " + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + + i);
+
+                        if (canvasPlacement.BudgetIndex == -1 && placementFlagsForRemovedInvisSpawns == canvasPlacement.PlacementFlags) // this is to find empty placements. The first objects in each file have a placementflags set to 29 (hex), despite budgetindex being -1. I am not yet sure which one is needed moar here, I'll go with the default empty one for now
                         {
                             UsermapConversion.addStatus("Empty reference placement found at index " + i);
+                            UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " " + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + +i);
                             emptyPlacement = canvasPlacement.Clone();
                             break;
                         }
@@ -138,15 +142,15 @@ namespace UsermapConverter
                         Cost = -1
                     };
 
-                    /*
-                    for (int i = 0; i < 256; i++)
+                    
+                    /*for (int i = 0; i < 256; i++)
                     {
                         var canvasBudgetEntry = canvasMap.Budget[i];
-                        //UsermapConversion.addStatus(canvasBudgetEntry.TagIndex.ToString("X")+" "+canvasBudgetEntry.RuntimeMin + " " + canvasBudgetEntry.RuntimeMax + " " + canvasBudgetEntry.CountOnMap + " " + canvasBudgetEntry.DesignTimeMax + " " + canvasBudgetEntry.Cost+ " " + i);
+                        UsermapConversion.addStatus(canvasBudgetEntry.TagIndex.ToString("X")+" "+canvasBudgetEntry.RuntimeMin + " " + canvasBudgetEntry.RuntimeMax + " " + canvasBudgetEntry.CountOnMap + " " + canvasBudgetEntry.DesignTimeMax + " " + canvasBudgetEntry.Cost+ " " + i);
                     }*/
 
                     var invisSpawnTagIndex = uint.Parse("2EA6", NumberStyles.HexNumber);
-
+                    
                     for (int i = 0; i < 640; i++)
                     {
                         var placement = newPlacements[i];
@@ -161,7 +165,7 @@ namespace UsermapConverter
                             if(tagIndex == invisSpawnTagIndex)
                             {
                                 UsermapConversion.addStatus("Found invisible spawn at placement index "+i+", budget index "+placement.BudgetIndex+", removing now. Likely remaining invis spawn points: "+ newBudgetEntries[placement.BudgetIndex].CountOnMap--);
-                                totalObjectCount--;
+                                //totalObjectCount--; // Don't reduce total object count, as apparently it isn't really influenced by how many objects are actually spawned. Weird as it sounds. Or maybe it just isn't influenced by these invis spawns. Either way, better withotu changing it for now.
                                 newPlacements[i] = emptyPlacement.Clone();
                             }
                         }
@@ -173,7 +177,7 @@ namespace UsermapConverter
                         if(budgetEntry.TagIndex == invisSpawnTagIndex)
                         {
                             newBudgetEntries[i] = emptyBudgetEntry.Clone();
-                            budgetEntryCount--;
+                            //budgetEntryCount--; // Let's try not changing it once.
                         }
                     }
                     
