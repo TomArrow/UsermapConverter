@@ -99,172 +99,87 @@ namespace UsermapConverter
 
                     var newBudgetEntries = new List<BudgetEntry>();
                     var newPlacements = new List<SandboxPlacement>();
-                    
+
+                    var totalObjectCount = srcMap.TotalObjectCount;
+                    var budgetEntryCount = srcMap.BudgetEntryCount;
+
                     // copy everything 1:1, then remove invis spawns
                     for (int i = 0; i < 640; i++)
                         newPlacements.Add(srcMap.Placements[i].Clone());
-                
+
                     for (int i = 0; i < 256; i++)
                         newBudgetEntries.Add(srcMap.Budget[i].Clone());
 
-
-
-                    /*
-                    // This first loop, I believe, is for so-called "scenario objects"
+                    // Find empty placement from canvasMap to use for replacing the invis spawn placements
+                    SandboxPlacement emptyPlacement = null;
                     for (int i = 0; i < 640; i++)
                     {
-                        var srcPlacement = srcMap.Placements[i];
-
-                        if (srcPlacement.BudgetIndex == -1)
-                            continue;
-
-                        var tagIndex = srcMap.Budget[srcPlacement.BudgetIndex].TagIndex;
-                        var tagIndexDiscarded = false;
-
-                        uint? newTagIndex;
-                        if (tagMap.TryGetValue(tagIndex, out newTagIndex)) // If the map contains this tagIndex, it means there was a change. If not, nevermind this, just move along.
-                        {
-
-                            if (newTagIndex.HasValue) // If new tag index isn't empty, it has to be mapped to a new value
-                            {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
-                                tagIndex = (uint)newTagIndex;
-                            }
-                            else // Else it simply doesn't exist anymore and has to be discarded
-                            {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
-                                tagIndexDiscarded = true;
-                            }
-                        }
-
-                        if (tagIndexDiscarded)
-                            continue;
-
-
-                        var newBudgetIndex = canvasMap.Budget.FindIndex(e => e.TagIndex == tagIndex);
-                        UsermapConversion.addStatus("SCENARIO OBJECT: Using new budget index " + newBudgetIndex + " (tagindex " + tagIndex.ToString("X") + ")");
-
-                        var substitutePlacements = canvasMap.Placements
-                            .Where((x, j) =>
-                            (int)(newPlacements[j].PlacementFlags & (1 << 5)) != 0 && // deleted
-                            x.BudgetIndex == newBudgetIndex).ToList();
-
-                        var newPlacementIndex2 = canvasMap.Placements.IndexOf(substitutePlacements.FirstOrDefault());
-                        if (newPlacementIndex2 == -1)
-                            continue;
-
-                        newPlacements[newPlacementIndex2] = srcPlacement.Clone();
-                        newPlacements[newPlacementIndex2].PlacementFlags |= (1 << 1); //touched
-                    }
-
-                    var newPlacementIndex = canvasMap.ScnrObjectCount;
-                    short? emptyPlacementIndex = null; // If a placement index is unused, I can use it for the map options
-                    */
-
-
-                    // This one is for the normal placements I believe
-                    /*for (var i = 0; i < 640; i++)
-                    {
-                        var srcPlacement = srcMap.Placements[i];
-
-                        if (srcPlacement.BudgetIndex == -1)
-                        {
-                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options"); }
-                            continue;
-                        }
-
-                        var tagIndex = srcMap.Budget[srcPlacement.BudgetIndex].TagIndex;
-                        var tagIndexDiscarded = false;
-
-                        uint? newTagIndex;
-                        if (tagMap.TryGetValue(tagIndex, out newTagIndex)) // If the map contains this tagIndex, it means there was a change. If not, nevermind this, just move along.
-                        {
-
-                            if (newTagIndex.HasValue) // If new tag index isn't empty, it has to be mapped to a new value
-                            {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
-                                tagIndex = (uint)newTagIndex;
-                            }
-                            else // Else it simply doesn't exist anymore and has to be discarded
-                            {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
-                                tagIndexDiscarded = true;
-                            }
-                        }
-
-
-                        if (tagIndexDiscarded)
-                        {
-                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options"); }
-                            continue;
-                        }
-
-                        var newBudgetIndex = canvasMap.Budget.FindIndex(e => e.TagIndex == tagIndex);
-                        if (newBudgetIndex == -1)
-                        {
-                            var n = newBudgetEntries.FindIndex(e => e.TagIndex == tagIndex);
-
-                            if (n == -1)
-                            {
-                                var entry = new BudgetEntry()
-                                {
-                                    TagIndex = tagIndex,
-                                    Cost = 1,
-                                    RuntimeMin = 0,
-                                    RuntimeMax = 255,
-                                    CountOnMap = 1,
-                                    DesignTimeMax = 255
-                                };
-
-                                newBudgetIndex = canvasMap.BudgetEntryCount + newBudgetEntries.Count();
-                                newBudgetEntries.Add(entry);
-
-
-                                UsermapConversion.addStatus("injecting 0x" + tagIndex.ToString("X") + " " + newBudgetIndex);
-                                Console.WriteLine("injecting 0x{0} {1}", tagIndex.ToString("X"), newBudgetIndex);
-                            }
-                            else
-                            {
-                                newBudgetIndex = canvasMap.BudgetEntryCount + n;
-                                UsermapConversion.addStatus("Changing count of newly injected tag by +1 to " + (++newBudgetEntries[n].CountOnMap).ToString() + ". Tagindex: " + newBudgetEntries[n].TagIndex.ToString("X") + " New Budget Index(on top of original budget): " + newBudgetIndex);
-
-                            }
-                        }
-                        else
-                        {
-
-                            UsermapConversion.addStatus("NON-SCENARIO OBJECT: Using new (already existing) budget index " + newBudgetIndex);
-                        }
-
-
-                        var newPlacement = newPlacements[newPlacementIndex] = srcPlacement.Clone();
-                        newPlacement.BudgetIndex = newBudgetIndex;
-                    }
-
-
-                    // Copy over map options (hex tag index 5728) from the canvas map (necessary because of the map barriers, may be leading to crashes in out of bound maps)
-                    var mapOptionsTagIndex = uint.Parse("5728", NumberStyles.HexNumber);
-                    for (var i = 0; i < 640; i++)
-                    {
                         var canvasPlacement = canvasMap.Placements[i];
-                        if (canvasPlacement.BudgetIndex != -1)
+                        
+                        //UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " " + canvasPlacement.Position + " " + canvasPlacement.RightVector + " " + canvasPlacement.UpVector + " " + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + + i);
+                        //UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " "  + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + +i);
+
+                        if (canvasPlacement.BudgetIndex == -1 && canvasPlacement.PlacementFlags == 0) // this is to find empty placements. The first objects in each file have a placementflags set to 29 (hex), despite budgetindex being -1. I am not yet sure which one is needed moar here, I'll go with the default empty one for now
+                        {
+                            UsermapConversion.addStatus("Empty reference placement found at index " + i);
+                            emptyPlacement = canvasPlacement.Clone();
+                            break;
+                        }
+
+                    }
+
+                    var emptyBudgetEntry = new BudgetEntry() // Values found by analyzing actual empty entries in sandbox.map files
+                    {
+                        TagIndex = 0xFFFFFFFF,
+                        RuntimeMin = 0,
+                        RuntimeMax = 0,
+                        CountOnMap = 0,
+                        DesignTimeMax = 255,
+                        Cost = -1
+                    };
+
+                    /*
+                    for (int i = 0; i < 256; i++)
+                    {
+                        var canvasBudgetEntry = canvasMap.Budget[i];
+                        //UsermapConversion.addStatus(canvasBudgetEntry.TagIndex.ToString("X")+" "+canvasBudgetEntry.RuntimeMin + " " + canvasBudgetEntry.RuntimeMax + " " + canvasBudgetEntry.CountOnMap + " " + canvasBudgetEntry.DesignTimeMax + " " + canvasBudgetEntry.Cost+ " " + i);
+                    }*/
+
+                    var invisSpawnTagIndex = uint.Parse("2EA6", NumberStyles.HexNumber);
+
+                    for (int i = 0; i < 640; i++)
+                    {
+                        var placement = newPlacements[i];
+
+                        if (placement.BudgetIndex == -1)
+                            continue;
+
+                        if(newBudgetEntries.ElementAtOrDefault(placement.BudgetIndex) != null)
                         {
 
-                            var tagIndex = canvasMap.Budget[canvasPlacement.BudgetIndex].TagIndex;
-                            if (tagIndex == mapOptionsTagIndex)
+                            var tagIndex = newBudgetEntries[placement.BudgetIndex].TagIndex;
+                            if(tagIndex == invisSpawnTagIndex)
                             {
-                                if (emptyPlacementIndex.HasValue)
-                                {
-                                    UsermapConversion.addStatus("Placing map options (0x5728) with disabled barriers in placement index " + emptyPlacementIndex);
-                                    newPlacements[(int)emptyPlacementIndex] = canvasPlacement.Clone();
-                                }
-                                else
-                                {
-                                    // There is no space to place map options. Sucks. Will either have to overwrite one element or ditch them.
-                                }
+                                UsermapConversion.addStatus("Found invisible spawn at placement index "+i+", budget index "+placement.BudgetIndex+", removing now. Likely remaining invis spawn points: "+ newBudgetEntries[placement.BudgetIndex].CountOnMap--);
+                                totalObjectCount--;
+                                newPlacements[i] = emptyPlacement.Clone();
                             }
                         }
-                    }*/
+                    }
+
+                    for(int i =0; i< 256; i++)
+                    {
+                        var budgetEntry = newBudgetEntries[i];
+                        if(budgetEntry.TagIndex == invisSpawnTagIndex)
+                        {
+                            newBudgetEntries[i] = emptyBudgetEntry.Clone();
+                            budgetEntryCount--;
+                        }
+                    }
+                    
+
+
+                    
 
                     srcStream.SeekTo(0);
                     srcStream.Stream.CopyTo(outStream.Stream);
@@ -276,8 +191,8 @@ namespace UsermapConverter
 
                     outStream.SeekTo(0x242);
                     outStream.WriteInt16(srcMap.ScnrObjectCount);
-                    outStream.WriteInt16((short)srcMap.TotalObjectCount);
-                    outStream.WriteInt16((short)srcMap.BudgetEntryCount);
+                    outStream.WriteInt16((short)totalObjectCount);
+                    outStream.WriteInt16((short)budgetEntryCount);
 
                     outStream.SeekTo(0x278);
                     foreach (var placement in newPlacements)
