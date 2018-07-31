@@ -210,6 +210,12 @@
     <None Include="Canvas\410_sandbox.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Canvas\700_sandbox.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Canvas\703_sandbox.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Canvas\705_sandbox.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
