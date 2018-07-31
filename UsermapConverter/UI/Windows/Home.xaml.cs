@@ -364,6 +364,31 @@ namespace UsermapConverter.Windows
             });
         }
 
+
+        private Task DoInvisSpawnRemoval(string destFolder)
+        {
+            var queue = FileQueue.ToList();
+            return Task.Run(() =>
+            {
+                foreach (var item in queue)
+                {
+                    var folderName = Regex.Replace(item.VariantName, @"[^a-zA-Z0-9\s]+", string.Empty);
+
+                    var outputFile = Path.Combine(destFolder, folderName, "sandbox.map");
+                    for (var i = 1; File.Exists(outputFile); i++)
+                    {
+                        outputFile = Path.Combine(destFolder, folderName, string.Format("sandbox_{0}.map", i));
+                    }
+
+                    var dir = Path.GetDirectoryName(outputFile);
+                    if (!Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    UsermapConversion.RemoveInvisSpawns(item.FileName, outputFile);
+                }
+            });
+        }
+
         private Task DoCreateDictionary(string destFolder)
         {
             var queue = FileQueue.ToList();
@@ -430,6 +455,24 @@ namespace UsermapConverter.Windows
             {
                 await DoCreateDictionary(txtOutputFolder.Text);
                 Metro.Dialogs.MetroMessageBox.Show(this.Title, "Dictionary created.");
+            }
+            finally
+            {
+                btnConvert.IsEnabled = true;
+                UpdateStatusText("Ready...");
+            }
+        }
+        
+
+        private async void btnRemoveInvisSpawns_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateStatusText("Removing invisible spawns...");
+            btnConvert.IsEnabled = false;
+
+            try
+            {
+                await DoInvisSpawnRemoval(txtOutputFolder.Text);
+                Metro.Dialogs.MetroMessageBox.Show(this.Title, "Invisible spawns removed.");
             }
             finally
             {

@@ -94,8 +94,10 @@
                                 <TextBox x:Name="txtOutputFolder" Text="./output" Grid.Column="0" Grid.ColumnSpan="2" FontSize="13.8" VerticalAlignment="Center" VerticalContentAlignment="Center"></TextBox>
                                 <StackPanel Orientation="Horizontal" Grid.Column="2" Margin="5, 0, 0, 0">
                                     <Button x:Name="btnBrowse" Click="btnBrowse_Click"  Width="45" Height="26"  Foreground="White"  Background="#444">...</Button>
-                                    <Button x:Name="btnConvert" Click="btnConvert_Click" Width="50" Height="26" Foreground="White" Margin="7,0,0,0" Background="#444">Convert</Button>
-                                    <Button x:Name="btnDictionary" Click="btnDictionary_Click" Width="100" Height="26" Foreground="White" Margin="7,0,0,0" Background="#444">Create Dictionary</Button>
+                                    <Button x:Name="btnConvert" Click="btnConvert_Click" Width="50" Height="26" Foreground="White" Margin="7,0,0,0" Background="#444" ToolTipService.ToolTip="Convert 0.5.1.1 map to 0.6">Convert</Button>
+                                    <Button x:Name="btnDictionary" Click="btnDictionary_Click" Width="100" Height="26" Foreground="White" Margin="7,0,0,0" Background="#444" ToolTipService.ToolTip="Create a csv file with all tag indices used in the loaded maps and their count">Create Dictionary</Button>
+                                    <Button x:Name="btnRemoveInvisSpawns" Click="btnRemoveInvisSpawns_Click" Width="130" Height="26" Foreground="White" Margin="7,0,0,0" Background="#444" ToolTipService.ToolTip="Removes all invisible spawns from a map. Should work with both 0.5.1.1 and 0.6 maps.">Remove Invis Spawns</Button>
+
                                     <!--<Button Width="25" Height="26" Foreground="White" Margin="7,0,0,0" Background="#444" Click="Button_Click"><Image Source="/Metro/Images/settings_logo.png" Height="16" Opacity="0.5"></Image></Button>-->
                                 </StackPanel>
 

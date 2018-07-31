@@ -104,6 +104,11 @@ namespace UsermapConverter
             public byte CountOnMap;
             public byte DesignTimeMax;
             public float Cost;
+
+            public BudgetEntry Clone()
+            {
+                return (BudgetEntry)this.MemberwiseClone();
+            }
         }
 
         public static SandboxContentHeader DeserializeContentHeader(EndianStream stream)
