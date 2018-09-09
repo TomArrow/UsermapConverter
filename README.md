@@ -16,13 +16,13 @@ Here's some more details:
 
 ## map.csv
 ~~Okay so, 0.6 includes a tag_list.csv, which correlates tag ids (4-digit hex codes) with some kind of object names. This looks like this:
-` 0x00002E90,objects\multi\spawning\respawn_point `
+ 0x00002E90,objects\multi\spawning\respawn_point~~
 
-This file is included here under php/mapforgeitems/0.6.csv
+~~This file is included here under php/mapforgeitems/0.6.csv~~
 
-I was given a similar csv file for 0.5.1.1, included here in the same folder as the other one as 0.5.1.1.csv.
+~~I was given a similar csv file for 0.5.1.1, included here in the same folder as the other one as 0.5.1.1.csv.~~
 
-What I did in PHP was to correlate the second column to create a map from old tag ids to new ones. You can read the exact code yourself, it's not too complicated.~~
+~~What I did in PHP was to correlate the second column to create a map from old tag ids to new ones. You can read the exact code yourself, it's not too complicated.~~
 
 I generated a resulting map.csv, which looks like this:
 ``` 0001,
