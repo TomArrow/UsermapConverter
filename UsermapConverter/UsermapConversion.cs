@@ -97,7 +97,7 @@ namespace UsermapConverter
                 {
                     var canvasMap = Usermap.DeserializeSandboxMap(canvasStream);
 
-                    UsermapConversion.addStatus("Map has a "+srcMap.TotalObjectCount+" total objects and " + srcMap.BudgetEntryCount + " budget entries and "+srcMap.ScnrObjectCount+" scenario objects");
+                   // UsermapConversion.addStatus("Map has a "+srcMap.TotalObjectCount+" total objects and " + srcMap.BudgetEntryCount + " budget entries and "+srcMap.ScnrObjectCount+" scenario objects");
 
                     var newBudgetEntries = new List<BudgetEntry>();
                     var newPlacements = new List<SandboxPlacement>();
@@ -124,8 +124,8 @@ namespace UsermapConverter
 
                         if (canvasPlacement.BudgetIndex == -1 && placementFlagsForRemovedInvisSpawns == canvasPlacement.PlacementFlags) // this is to find empty placements. The first objects in each file have a placementflags set to 29 (hex), despite budgetindex being -1. I am not yet sure which one is needed moar here, I'll go with the default empty one for now
                         {
-                            UsermapConversion.addStatus("Empty reference placement found at index " + i);
-                            UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " " + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + +i);
+                            //UsermapConversion.addStatus("Empty reference placement found at index " + i);
+                            //UsermapConversion.addStatus(canvasPlacement.PlacementFlags.ToString("X") + " " + canvasPlacement.Unknown_1.ToString("X") + " " + canvasPlacement.ObjectDatumHandle.ToString("X") + " " + canvasPlacement.GizmoDatumHandle.ToString("X") + " " + canvasPlacement.BudgetIndex + " " + canvasPlacement.Unknown_2.ToString("X") + " " + canvasPlacement.Unknown_3.ToString("X") + " " + canvasPlacement.EngineFlags.ToString("X") + " " + canvasPlacement.Flags.ToString("X") + " " + canvasPlacement.Team + " " + canvasPlacement.Extra + " " + canvasPlacement.RespawnTime + " " + canvasPlacement.ObjectType + " " + canvasPlacement.ZoneShape + " " + canvasPlacement.ZoneRadiusWidth + " " + canvasPlacement.ZoneDepth + " " + canvasPlacement.ZoneTop + " " + canvasPlacement.ZoneBottom + " " + +i);
                             emptyPlacement = canvasPlacement.Clone();
                             break;
                         }
@@ -164,7 +164,7 @@ namespace UsermapConverter
                             var tagIndex = newBudgetEntries[placement.BudgetIndex].TagIndex;
                             if(tagIndex == invisSpawnTagIndex)
                             {
-                                UsermapConversion.addStatus("Found invisible spawn at placement index "+i+", budget index "+placement.BudgetIndex+", removing now. Likely remaining invis spawn points: "+ newBudgetEntries[placement.BudgetIndex].CountOnMap--);
+                                //UsermapConversion.addStatus("Found invisible spawn at placement index "+i+", budget index "+placement.BudgetIndex+", removing now. Likely remaining invis spawn points: "+ newBudgetEntries[placement.BudgetIndex].CountOnMap--);
                                 //totalObjectCount--; // Don't reduce total object count, as apparently it isn't really influenced by how many objects are actually spawned. Weird as it sounds. Or maybe it just isn't influenced by these invis spawns. Either way, better withotu changing it for now.
                                 newPlacements[i] = emptyPlacement.Clone();
                             }
@@ -236,7 +236,7 @@ namespace UsermapConverter
                         newPlacements.Add(canvasMap.Placements[i].Clone());
 
 
-                    UsermapConversion.addStatus("Source map has " + srcMap.ScnrObjectCount + " scenario objects");
+                   // UsermapConversion.addStatus("Source map has " + srcMap.ScnrObjectCount + " scenario objects");
 
                     // This first loop, I believe, is for so-called "scenario objects"
                     for (int i = 0; i < srcMap.ScnrObjectCount; i++) 
@@ -255,12 +255,12 @@ namespace UsermapConverter
 
                             if (newTagIndex.HasValue) // If new tag index isn't empty, it has to be mapped to a new value
                             {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
+                                //UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
                                 tagIndex = (uint)newTagIndex;
                             }
                             else // Else it simply doesn't exist anymore and has to be discarded
                             {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
+                                //UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
                                 tagIndexDiscarded = true;
                             }
                         }
@@ -270,7 +270,7 @@ namespace UsermapConverter
                         
 
                         var newBudgetIndex = canvasMap.Budget.FindIndex(e => e.TagIndex == tagIndex);
-                        UsermapConversion.addStatus("SCENARIO OBJECT: Using new budget index "+newBudgetIndex + " (tagindex "+tagIndex.ToString("X")+")");
+                        //UsermapConversion.addStatus("SCENARIO OBJECT: Using new budget index "+newBudgetIndex + " (tagindex "+tagIndex.ToString("X")+")");
 
                         var substitutePlacements = canvasMap.Placements
                             .Where((x, j) =>
@@ -287,6 +287,7 @@ namespace UsermapConverter
 
                     var newPlacementIndex = canvasMap.ScnrObjectCount;
                     short? emptyPlacementIndex = null; // If a placement index is unused, I can use it for the map options
+                    bool hasBarrierRemoval = false;
 
                     // This one is for the normal placements I believe
                     for (var i = srcMap.ScnrObjectCount; i < 640; i++, newPlacementIndex++) 
@@ -295,7 +296,7 @@ namespace UsermapConverter
 
                         if (srcPlacement.BudgetIndex == -1)
                         {
-                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options"); }
+                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; /*UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options");*/ }
                             continue;
                         }
 
@@ -305,15 +306,17 @@ namespace UsermapConverter
                         uint? newTagIndex;
                         if (tagMap.TryGetValue(tagIndex, out newTagIndex)) // If the map contains this tagIndex, it means there was a change. If not, nevermind this, just move along.
                         {
-
+                            if (tagIndex == 0x1a6c) {
+                                hasBarrierRemoval = true;
+                            }
                             if (newTagIndex.HasValue) // If new tag index isn't empty, it has to be mapped to a new value
                             {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
+                                //UsermapConversion.addStatus(tagIndex.ToString("X") + " mapped to " + ((uint)newTagIndex).ToString("X"));
                                 tagIndex = (uint)newTagIndex;
                             }
                             else // Else it simply doesn't exist anymore and has to be discarded
                             {
-                                UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
+                                //UsermapConversion.addStatus(tagIndex.ToString("X") + " discarded");
                                 tagIndexDiscarded = true;
                             }
                         }
@@ -321,7 +324,7 @@ namespace UsermapConverter
 
                         if (tagIndexDiscarded)
                         {
-                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options"); }
+                            if (!emptyPlacementIndex.HasValue) { emptyPlacementIndex = newPlacementIndex; /*UsermapConversion.addStatus("Unused placement index " + emptyPlacementIndex + " will be used for map options");*/ }
                             continue;
                         }
 
@@ -346,19 +349,19 @@ namespace UsermapConverter
                                 newBudgetEntries.Add(entry);
 
 
-                                UsermapConversion.addStatus("injecting 0x" + tagIndex.ToString("X") + " "+ newBudgetIndex);
-                                Console.WriteLine("injecting 0x{0} {1}", tagIndex.ToString("X"), newBudgetIndex);
+                                //UsermapConversion.addStatus("injecting 0x" + tagIndex.ToString("X") + " "+ newBudgetIndex);
+                               // Console.WriteLine("injecting 0x{0} {1}", tagIndex.ToString("X"), newBudgetIndex);
                             }
                             else
                             {
                                 newBudgetIndex = canvasMap.BudgetEntryCount + n;
-                                UsermapConversion.addStatus("Changing count of newly injected tag by +1 to "+ (++newBudgetEntries[n].CountOnMap).ToString() +". Tagindex: "+newBudgetEntries[n].TagIndex.ToString("X")+" New Budget Index(on top of original budget): " + newBudgetIndex);
+                                //UsermapConversion.addStatus("Changing count of newly injected tag by +1 to "+ (++newBudgetEntries[n].CountOnMap).ToString() +". Tagindex: "+newBudgetEntries[n].TagIndex.ToString("X")+" New Budget Index(on top of original budget): " + newBudgetIndex);
                                
                             }
                         } else
                         {
 
-                            UsermapConversion.addStatus("NON-SCENARIO OBJECT: Using new (already existing) budget index " + newBudgetIndex);
+                            //UsermapConversion.addStatus("NON-SCENARIO OBJECT: Using new (already existing) budget index " + newBudgetIndex);
                         }
 
 
@@ -378,9 +381,9 @@ namespace UsermapConverter
                             var tagIndex = canvasMap.Budget[canvasPlacement.BudgetIndex].TagIndex;
                             if(tagIndex == mapOptionsTagIndex)
                             {
-                                if (emptyPlacementIndex.HasValue)
+                                if (emptyPlacementIndex.HasValue && hasBarrierRemoval)
                                 {
-                                    UsermapConversion.addStatus("Placing map options (0x5728) with disabled barriers in placement index "+emptyPlacementIndex);
+                                    //UsermapConversion.addStatus("Placing map options (0x5728) with disabled barriers in placement index "+emptyPlacementIndex);
                                     newPlacements[(int)emptyPlacementIndex] = canvasPlacement.Clone();
                                 } else
                                 {
