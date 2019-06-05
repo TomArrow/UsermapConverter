@@ -367,6 +367,9 @@ namespace UsermapConverter
 
                         var newPlacement = newPlacements[newPlacementIndex] = srcPlacement.Clone();
                         newPlacement.BudgetIndex = newBudgetIndex;
+                        if (tagIndex == 0x444C || tagIndex == 0x4221) {
+                            newPlacement.ZoneShape = 4;
+                        }
                     }
 
 
