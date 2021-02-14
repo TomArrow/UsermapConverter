@@ -55,7 +55,7 @@ namespace UsermapConverter.Windows
             Window_StateChanged(null, null);
 
             listboxFileQueue.ItemsSource = FileQueue;
-            txtOutputFolder.Text = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Output");
+            txtOutputFolder.Text = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps");
 
         }
 
